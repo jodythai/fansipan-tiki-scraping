@@ -10,7 +10,7 @@ def db_get_connection():
                                       password="P@ssw0rd",
                                       host="127.0.0.1",
                                       port="5432",
-                                      database="tiki2")
+                                      database="tiki4")
         return connection
 
     except Exception as error:
@@ -146,9 +146,10 @@ def execute_query(query):
         return []
 
     finally:
-        return cur.fetchall()
+        results =  cur.fetchall()
         cur.close()
         connection.close()
+        return results
 
 def update_query(query):
     """Execute an UPDATE query
