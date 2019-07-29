@@ -161,6 +161,7 @@ def scrape_all():
         if new_rows:
             results += new_rows
             
+            # Insert products to database
             for product in new_rows:
                 db.insert_row(product, "products")
 
