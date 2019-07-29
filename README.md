@@ -9,13 +9,15 @@
 **Project goals:**
 
 **1. Crawling all products from Tiki with user ratings and comments**
+
 **2. Pushing the data to a PostgreSQL database**
+
 **3. Analyzing the data to get more insights of Tiki's business**
 
 ## Project Plan
 
 * Install PostgreSQL
-* Create Database `tiki` and Create tables for `Users`, `Products`, `Categories`, `Comments` in `db_init.py` (We currently have `Users` and `Products` tables; `Categories` and `Comments` tables belong to further work).
+* Create Database `tiki` and Create tables for `Users`, `Products`, `Categories`, `Comments` in `db_init.py` (We currently have `Categories` and `Products` tables; `Users` and `Comments` tables belong to further work).
 * Move solution of Week 1 project to a Python script `tiki_scraping.py` 
 * Improve week 1 solution to get more info of the products
 * Write functions to save `product` into the database 
@@ -91,8 +93,8 @@ psql -h <host> -p <port> -U <username> -W <password> <database>
 `-h`: allows you to change IP address of the targeted computer.
 `<host>`: Server's IP address on which postgres is to listen for TCP/IP connections from client applications.
 `<port>`: Specifies the TCP/IP port or local Unix domain socket file extension on which postgres is to listen for connections from client applications (normally 5432).
-` targeted computer. 
-| Commands | Description | 
+
+|Commands | Description | 
 | -------- | -------- | 
 |\\?          |Know all available psql commands| 
 | h ALTER TABLE   |Get help on specific PostgreSQL statement|
@@ -175,8 +177,8 @@ def create_tables():
 		"""
         cur.execute(query)
 
-```
-#### Further works:
+### Further work
+### We currently have `Categories` and `Products` tables; `Users` and `Comments` tables belong to further work.
 ```python 
 query = """
 			CREATE TABLE IF NOT EXISTS users (
@@ -209,9 +211,9 @@ query = """
     finally:
         cur.close()
         connection.close()
-```
 
-### 4. Insert data to PostSQL Database
+```
+### 4. Insert data to PostgresSQL Database
 ```python
 def insert_row(data, table_name, default=True):
     """Insert data into table_name
@@ -362,3 +364,6 @@ Congratulations! You've successfully created your first repository, and initiali
     > remote: Compressing objects: 100% (8/8), done.
     > remove: Total 10 (delta 1), reused 10 (delta 1)
     > Unpacking objects: 100% (10/10), done.`
+
+## Further work
+We currently have `Categories` and `Products` tables; `Users` and `Comments` tables belong to further work.
