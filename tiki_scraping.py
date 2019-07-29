@@ -17,31 +17,74 @@ def parse(url):
 
     return BeautifulSoup(res, features="lxml")
 
+def is_category_existed(url):
+    """
+        This function will check if a category is existed in the db or not
+        by checking the category url. 
+        If it is existed, return True, else False
+    """
+    
+    existed_category = db.execute_query("SELECT 1 FROM categories WHERE url = '" + url + "'")
+    
+    # if the current category is not in the database
+    if existed_category:
+        return True
+    else:
+        return False
 
 def add_sub_categories():
 
-    categories = db.execute_query("SELECT category_id, url, weight FROM categories;")
+    categories = db.execute_query("SELECT category_id, url, weight FROM categories \
+                                    WHERE parent IS NULL;")
 
     for item in categories:
         print('INFO: Get sub-categories of {}'.format(item[1]))
+        total_products_sub = 0
+        parent_id = item[0]
+        weight = item[2]
+
+        # parse the root category's html
         s = parse(item[1])
+
+        # Find all sub category of the current root category
         sub_categories = s.findAll(
             'div', {'class': 'list-group-item is-child'})
+        
+        # loop through each sub category
         for sub in sub_categories:
+            
             url = TIKI_URL + sub.a['href']
-            index = sub.a.text.rindex('(')
-            name = sub.a.text[:index].strip()
-            count = int(sub.a.text.strip()[index+1:-1])
-            created_on = datetime.datetime.now()
+            
+            # if the current sub category is not in the database, then insert it
+            if is_category_existed(url) == False:
+                index = sub.a.text.rindex('(')
+                name = sub.a.text[:index].strip()
+                count = int(sub.a.text.strip()[index+1:-1])
+                created_on = datetime.datetime.now()
 
-            db.insert_row(
-                (name, url, item[0], item[2], count, created_on), 'categories')
+                print(count)
+                # add the current sub category total products number to the total products number
+                total_products_sub += count
 
+                # insert sub category into db
+                db.insert_row((name, url, parent_id, weight, count, created_on), 'categories')
+        
+        # After inserting all sub categories, update the total number of products
+        # to the root category
+        query = "UPDATE categories SET count = {} WHERE category_id = {}".format(total_products_sub, parent_id)
+        db.update_query(query)
 
 def get_categories():
-    """Find all URLs of categories on Tiki.vn"""
-    print("INFO: Get categories")
+    """Find all URLs of root categories on Tiki.vn"""
+    print("INFO: Get root (parent) categories")
 
+    """
+    Define weight for each root category.
+    we use this number to decide on how many products we will scrape 
+    from each sub category of each root category. 
+    The formula is: 
+    total scraping products = (root category total products * weight) / number of sub category
+    """
     weight_list = [1, 
                     0.3,
                     0.005,
@@ -65,15 +108,13 @@ def get_categories():
     for index, item in enumerate(s.find_all('a', class_='MenuItem__MenuLink-tii3xq-1 efuIbv')):
         url = item.get('href')
         category = item.find('span', class_='text').text
+
+        # In case the list of Tiki's root categories is changed,
+        # we will add a default number for weight to keep this function 
+        # from being interupted due to array item matching error
         weight = weight_list[index] if index < len(weight_list) else 1
+
         db.insert_row((category, url, None, weight, 0, created_on), 'categories')
-
-
-# db.create_tables()
-# get_categories()
-# add_sub_categories()
-# print(len(db.execute_query("SELECT * FROM categories WHERE parent IS NOT NULL;")))
-
 
 def scraping_products_on_page(category_id, url):
     """Crawl all products  on a page and save into DB
@@ -124,28 +165,37 @@ def scraping_products_on_page(category_id, url):
             ]
 
             # Add the product information of each product into 'results' list
-            #db.insert_row(row, 'products')
             list_products.append(row)
 
     return list_products
 
 def scrape_all():
+    """
+    This function will:
+    1. Get the list of sub categories from the db
+    2. For each sub category, it will scrape the products 
+        until the total scraped products reach the maximum scraping products
+        we calculate with weight number. At that point, it will change to another sub category.
+    """
 
     print('INFO scrape_all(): Start craping')
-
+    
     results = []
     queue = []
 
     # Get all sub category links
-    categories = db.execute_query("SELECT category_id, url, weight, count FROM categories WHERE parent IS NOT NULL;") #get_categories()
+    categories = db.execute_query("SELECT category_id, url, weight, count \
+                                    FROM categories WHERE parent IS NOT NULL;")
     
+    # Compute the list of sub categories
     for cat in categories:
         url = cat[1]
         cat_id = cat[0]
         weight = cat[2]
         count = cat[3]
 
-        max_products = round(weight*count) # limit of number of products
+        # Set the maximum number of products will be scraped for each sub category
+        max_products = round(weight*count)
 
         queue.append((cat_id, url, max_products))
 
@@ -180,4 +230,4 @@ def scrape_all():
 db.create_tables()
 get_categories()
 add_sub_categories()
-scrape_all()
+#scrape_all()

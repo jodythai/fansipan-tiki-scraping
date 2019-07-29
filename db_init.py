@@ -10,7 +10,7 @@ def db_get_connection():
                                       password="P@ssw0rd",
                                       host="127.0.0.1",
                                       port="5432",
-                                      database="tiki5")
+                                      database="tiki2")
         return connection
 
     except Exception as error:
@@ -125,7 +125,7 @@ def insert_row(data, table_name, default=True):
 
 
 def execute_query(query):
-    """Execute an SELECT query
+    """Execute a SELECT query
     """
     print("INFO: Execute {}".format(query))
 
@@ -147,5 +147,30 @@ def execute_query(query):
 
     finally:
         return cur.fetchall()
+        cur.close()
+        connection.close()
+
+def update_query(query):
+    """Execute an UPDATE query
+    """
+    print("INFO: Execute {}".format(query))
+
+    try:
+        connection = db_get_connection()
+        if not connection:
+            print('ERROR: Connection db fail')
+            return
+        cur = connection.cursor()
+
+        cur.execute(query)
+
+        connection.commit()
+
+    except Exception as error:
+        print('ERROR: Insert into DB fail -', error)
+        connection.rollback()
+        return []
+
+    finally:
         cur.close()
         connection.close()
