@@ -115,8 +115,10 @@ def add_root_categories():
         # from being interupted due to array item matching error
         weight = weight_list[index] if index < len(weight_list) else 1
 
-        # insert category to db
-        db.insert_row((category, url, None, weight, 0, created_on), 'categories')
+        # if the current root category is not in the database, then insert it
+        if is_category_existed(url) == False:
+            # insert category to db
+            db.insert_row((category, url, None, weight, 0, created_on), 'categories')
 
 def scraping_products_on_page(category_id, url):
     """Crawl all products  on a page and save into DB
