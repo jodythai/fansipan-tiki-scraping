@@ -87,7 +87,7 @@ def scraping_products_on_page(category_id, url):
 
     # If the tag list is empty (i.e. the page doesn't have any product), return an empty list.
     if len(product_items) == 0:
-        return
+        return list_products
     else:
         # Iterate through all product and store the product information in the 'row' list
         for i in range(len(product_items)):
