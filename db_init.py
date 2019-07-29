@@ -10,7 +10,7 @@ def db_get_connection():
                                       password="P@ssw0rd",
                                       host="127.0.0.1",
                                       port="5432",
-                                      database="tiki4")
+                                      database="tiki5")
         return connection
 
     except Exception as error:
