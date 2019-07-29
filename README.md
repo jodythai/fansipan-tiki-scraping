@@ -9,7 +9,9 @@
 **Project goals:**
 
 **1. Crawling all products from Tiki with user ratings and comments**
+
 **2. Pushing the data to a PostgreSQL database**
+
 **3. Analyzing the data to get more insights of Tiki's business**
 
 ## Project Plan
@@ -91,8 +93,8 @@ psql -h <host> -p <port> -U <username> -W <password> <database>
 `-h`: allows you to change IP address of the targeted computer.
 `<host>`: Server's IP address on which postgres is to listen for TCP/IP connections from client applications.
 `<port>`: Specifies the TCP/IP port or local Unix domain socket file extension on which postgres is to listen for connections from client applications (normally 5432).
-` targeted computer. 
-| Commands | Description | 
+
+|Commands | Description | 
 | -------- | -------- | 
 |\\?          |Know all available psql commands| 
 | h ALTER TABLE   |Get help on specific PostgreSQL statement|
@@ -176,42 +178,7 @@ def create_tables():
         cur.execute(query)
 
 ```
-#### Further works:
-```python 
-query = """
-			CREATE TABLE IF NOT EXISTS users (
-				user_id SERIAL NOT NULL PRIMARY KEY,
-				username VARCHAR(50),
-				created_on TIMESTAMP
-			);
-		"""
-        cur.execute(query)
-
-        query = """
-			CREATE TABLE IF NOT EXISTS comments (
-				user_id INTEGER NOT NULL,
-				product_id INTEGER NOT NULL,
-				PRIMARY KEY (user_id, product_id),
-				content TEXT,
-				rating FLOAT,
-				CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(user_id),
-				CONSTRAINT comments_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(product_id)
-			);
-		   """
-        cur.execute(query)
-
-        connection.commit()
-
-    except Exception as error:
-        print('ERROR: Create table fail -', error)
-        connection.rollback()
-
-    finally:
-        cur.close()
-        connection.close()
-```
-
-### 4. Insert data to PostSQL Database
+### 4. Insert data to PostgresSQL Database
 ```python
 def insert_row(data, table_name, default=True):
     """Insert data into table_name
@@ -362,3 +329,39 @@ Congratulations! You've successfully created your first repository, and initiali
     > remote: Compressing objects: 100% (8/8), done.
     > remove: Total 10 (delta 1), reused 10 (delta 1)
     > Unpacking objects: 100% (10/10), done.`
+
+## Further work
+We currently have `Users` and `Products` tables; `Categories` and `Comments` tables belong to further work.
+```python 
+query = """
+			CREATE TABLE IF NOT EXISTS users (
+				user_id SERIAL NOT NULL PRIMARY KEY,
+				username VARCHAR(50),
+				created_on TIMESTAMP
+			);
+		"""
+        cur.execute(query)
+
+        query = """
+			CREATE TABLE IF NOT EXISTS comments (
+				user_id INTEGER NOT NULL,
+				product_id INTEGER NOT NULL,
+				PRIMARY KEY (user_id, product_id),
+				content TEXT,
+				rating FLOAT,
+				CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(user_id),
+				CONSTRAINT comments_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(product_id)
+			);
+		   """
+        cur.execute(query)
+
+        connection.commit()
+
+    except Exception as error:
+        print('ERROR: Create table fail -', error)
+        connection.rollback()
+
+    finally:
+        cur.close()
+        connection.close()
+```
